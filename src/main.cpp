@@ -8,8 +8,8 @@
 #include <MD_MAX72xx.h>
 
 //WiFi-Settings
-const char* ssid = "SURFACE-BOOK-3 2621";
-const char* password = "3T3n7(57";
+#define WLAN_MICHEL
+#include "settings.h"
 
 //Time-Settings
 const long utcOffsetInSeconds = 3600;
@@ -303,7 +303,7 @@ void setup()
 
   //Connect to WiFi
   WiFi.mode(WIFI_STA); //Optional
-  WiFi.begin(ssid, password);
+  WiFi.begin(WLAN_SSID, WLAN_KEY);
   Serial.println("\nConnecting");
   while(WiFi.status() != WL_CONNECTED){
       Serial.print(".");
