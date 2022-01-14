@@ -13,15 +13,17 @@
         }
         receiver::receiver(int idin){
             id = idin;
+            timeshift=0;
         }
         receiver::receiver(){
+            timeshift=0;
 
         }
 
         void receiver::notifyUpdate(){
             auto pl = generatePayload();
             const char *payload = pl.c_str();
-            if(driver.send((uint8_t *)payload, sizeof(payload))){
+            if(driver.send((uint8_t *)payload, strlen(payload)+1)){
                 Serial.print("Transmitted: ");
                 Serial.print(payload);
                 Serial.print(" Lenght: ");

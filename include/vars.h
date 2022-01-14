@@ -4,7 +4,6 @@
 #include <RH_ASK.h>
 #include <receiver.h>
 
-extern int timeshift;
 extern ESP8266WebServer server;  
 extern RH_ASK driver;
 extern unsigned long UTC0;

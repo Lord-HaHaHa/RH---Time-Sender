@@ -12,7 +12,7 @@ class receiver{
         String generatePayload();
 
     public:
-        int timeshift;
+        unsigned int timeshift;
         void notifyUpdate();
         receiver(int id);
         receiver();
