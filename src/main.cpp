@@ -4,6 +4,7 @@
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 #include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
 #include <MD_Parola.h>
 #include <MD_MAX72xx.h>
 
@@ -11,14 +12,22 @@
 #define WLAN_SURFACE_HOTSPOT
 #include "settings.h"
 
+//Webserver-settings
+ESP8266WebServer server(80);  
+int timeshift = 0;
+String Argument_Name, Clients_Response;
+
 //Time-Settings
 const long utcOffsetInSeconds = 3600;
 char daysOfTheWeek[7][12] = {"Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnestag", "Freitag", "Sammstag"};
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
 
-//Output
+//forward delaration
 void setupDisplay();
+void HandleClient();
+void ShowClientResponse();
+void setDisplay(String& time);
 
 RH_ASK driver(2000, D1, D3);
 
@@ -41,22 +50,83 @@ void setup()
       Serial.print(".");
       delay(100);
   }
+
+  server.begin(); Serial.println("Webserver started..."); // Start the webserver
   Serial.println("\nConnected to the WiFi network");
-  Serial.print("Local ESP32 IP: ");
-  Serial.println(WiFi.localIP());
+  Serial.print("Use this URL to connect: http://");// Print the IP address
+  Serial.print(WiFi.localIP());Serial.println("/");
+
+  //Setup Webserver
+  // Next define what the server should do when a client connects
+  server.on("/", HandleClient); // The client connected with no arguments e.g. http:192.160.0.40/
+  server.on("/result", ShowClientResponse);
+  Serial.println("Server listening");
 }
 
-void setDisplay(String& time);
+void HandleClient() {
+  String webpage;
+  webpage =  "<html>";
+   webpage += "<head><title>ESP8266 Input Example</title>";
+    webpage += "<style>";
+     webpage += "body { background-color: #E6E6FA; font-family: Arial, Helvetica, Sans-Serif; Color: blue;}";
+    webpage += "</style>";
+   webpage += "</head>";
+   webpage += "<body>";
+     String IPaddress = WiFi.localIP().toString();
+     webpage += "<form action='http://"+IPaddress+"' method='POST'>";
+      webpage += "<select name='user_input'>";
+        webpage += "<option value='0'>UTC 0</option>";
+        webpage += "<option value='3600'>UTC +1</option>";
+        webpage += "<option value='10800'>UTC +3</option>";
+        webpage += "<option value='-18000'>UTC -5</option>";
+      webpage += "</select>";
+      webpage += "<input type='submit' value='Apply Change'>";
+     webpage += "</form>";
+   webpage += "</body>";
+  webpage += "</html>";
+  server.send(200, "text/html", webpage); // Send a response to the client asking for input
+  if (server.args() > 0 ) { // Arguments were received
+    for ( uint8_t i = 0; i < server.args(); i++ ) {
+      Argument_Name = server.argName(i);
+      if (server.argName(i) == "user_input") {
+        Serial.print(" Input received was: ");
+        Serial.println(server.arg(i));
+        Clients_Response = server.arg(i);
+        timeshift = server.arg(i).toInt();
+        // e.g. range_maximum = server.arg(i).toInt();   // use string.toInt()   if you wanted to convert the input to an integer number
+        // e.g. range_maximum = server.arg(i).toFloat(); // use string.toFloat() if you wanted to convert the input to a floating point number
+      }
+    }
+  }
+}
+
+void ShowClientResponse() {
+  String webpage;
+  webpage =  "<html>";
+   webpage += "<head><title>ESP8266 Input Example</title>";
+    webpage += "<style>";
+     webpage += "body { background-color: #E6E6FA; font-family: Arial, Helvetica, Sans-Serif; Color: blue;}";
+    webpage += "</style>";
+   webpage += "</head>";
+   webpage += "<body>";
+    webpage += "<h1><br>ESP8266 Server - This was what the client sent</h1>";
+    webpage += "<p>Response received was: " + Clients_Response + "</p>";
+   webpage += "</body>";
+  webpage += "</html>";
+  server.send(200, "text/html", webpage); // Send a response to the client asking for input
+}
 
 void loop()
 {
+  server.handleClient();
+
   //Get Time 
   timeClient.update();
   unsigned long sec=timeClient.getSeconds();
   unsigned long min=timeClient.getMinutes();
   unsigned long hor=timeClient.getHours();
-  unsigned long time = sec + min*60UL + hor*3600UL;
-  Serial.println(time);
+  unsigned long time = sec + min*60UL + hor*3600UL + timeshift;
+  //Serial.println(time);
 
   //Output-Data
   String output = timeClient.getFormattedTime();  
@@ -66,14 +136,13 @@ void loop()
   const char *msg = stime.c_str();
   //const char *msg = "1233";
   if(driver.send((uint8_t *)msg, strlen(msg) + 1)){
-    Serial.print("Transmitted: ");
-	Serial.print(msg);
-	Serial.print(" Lenght: ");
-	Serial.println(strlen(msg));
+    //Serial.print("Transmitted: ");
+	//Serial.print(msg);
+	//Serial.print(" Lenght: ");
+	//Serial.println(strlen(msg));
   }
   else
     Serial.println("Failed to Send");
   driver.waitPacketSent();
-  delay(1000);
 
 }

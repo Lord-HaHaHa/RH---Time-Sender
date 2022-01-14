@@ -86,8 +86,5 @@ void printText(uint8_t modStart, uint8_t modEnd, const char *pMsg)
 }
 
 void setDisplay(String& time) {
-    Serial.print("Message: ");
-    Serial.println(time);
-
     printText(0, MAX_DEVICES-1, time.c_str());
 }
