@@ -59,7 +59,7 @@ void setup()
   //Setup Webserver
   // Next define what the server should do when a client connects
   server.on("/", HandleClient); // The client connected with no arguments e.g. http:192.160.0.40/
-  server.on("/result", ShowClientResponse);
+  //server.on("/result", ShowClientResponse);
   Serial.println("Server listening");
 }
 
@@ -74,7 +74,7 @@ void HandleClient() {
    webpage += "<body>";
      String IPaddress = WiFi.localIP().toString();
      webpage += "<form action='http://"+IPaddress+"' method='POST'>";
-      webpage += "<select name='user_input'>";
+      webpage += "<select name='clock1'>";
         webpage += "<option value='0'>UTC 0</option>";
         webpage += "<option value='3600'>UTC +1</option>";
         webpage += "<option value='10800'>UTC +3</option>";
@@ -85,35 +85,19 @@ void HandleClient() {
    webpage += "</body>";
   webpage += "</html>";
   server.send(200, "text/html", webpage); // Send a response to the client asking for input
-  if (server.args() > 0 ) { // Arguments were received
+  
+  // Arguments were received
+  if (server.args() > 0 ) { 
     for ( uint8_t i = 0; i < server.args(); i++ ) {
       Argument_Name = server.argName(i);
-      if (server.argName(i) == "user_input") {
+      if (server.argName(i) == "clock1") {
         Serial.print(" Input received was: ");
         Serial.println(server.arg(i));
         Clients_Response = server.arg(i);
         timeshift = server.arg(i).toInt();
-        // e.g. range_maximum = server.arg(i).toInt();   // use string.toInt()   if you wanted to convert the input to an integer number
-        // e.g. range_maximum = server.arg(i).toFloat(); // use string.toFloat() if you wanted to convert the input to a floating point number
       }
     }
   }
-}
-
-void ShowClientResponse() {
-  String webpage;
-  webpage =  "<html>";
-   webpage += "<head><title>ESP8266 Input Example</title>";
-    webpage += "<style>";
-     webpage += "body { background-color: #E6E6FA; font-family: Arial, Helvetica, Sans-Serif; Color: blue;}";
-    webpage += "</style>";
-   webpage += "</head>";
-   webpage += "<body>";
-    webpage += "<h1><br>ESP8266 Server - This was what the client sent</h1>";
-    webpage += "<p>Response received was: " + Clients_Response + "</p>";
-   webpage += "</body>";
-  webpage += "</html>";
-  server.send(200, "text/html", webpage); // Send a response to the client asking for input
 }
 
 void loop()
