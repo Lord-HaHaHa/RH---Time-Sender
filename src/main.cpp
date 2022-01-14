@@ -6,16 +6,18 @@
 #include <ESP8266WiFi.h>
 #include <MD_Parola.h>
 #include <MD_MAX72xx.h>
+#include <receiver.h>
 
 //WiFi-Settings
 #define WLAN_SURFACE_HOTSPOT
-#include "settings.h"
+#include <settings.h>
+
 
 //Webserver-settings
-#include "vars.h"
+#include <vars.h>
 
 //Time-Settings
-const long utcOffsetInSeconds = 3600;
+const long utcOffsetInSeconds = 0;
 char daysOfTheWeek[7][12] = {"Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnestag", "Freitag", "Sammstag"};
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
@@ -26,7 +28,8 @@ void setupWebserver();
 void setDisplay(String& time);
 
 RH_ASK driver(2000, D1, D3);
-
+const unsigned int RECVEIVERS_LENGHT = 3;
+receiver receivers[RECVEIVERS_LENGHT]={};
 void setup()
 {
   pinMode(D3, OUTPUT);
@@ -48,8 +51,12 @@ void setup()
   }
   setupWebserver();
   
+  //register receiver
+  receivers[0] = receiver(1);
+  receivers[1] = receiver(2);
+  receivers[2] = receiver(3);
 }
-
+unsigned long UTC0=0;
 void loop()
 {
   server.handleClient();
@@ -59,22 +66,16 @@ void loop()
   unsigned long sec=timeClient.getSeconds();
   unsigned long min=timeClient.getMinutes();
   unsigned long hor=timeClient.getHours();
-  unsigned long time = sec + min*60UL + hor*3600UL + timeshift;
+  UTC0 = sec + min*60UL + hor*3600UL;
 
   //Output-Data
   String output = timeClient.getFormattedTime();  
   setDisplay(output);
 
-  String stime = String(time);
-  const char *msg = stime.c_str();
-  if(driver.send((uint8_t *)msg, strlen(msg) + 1)){
-    //Serial.print("Transmitted: ");
-	//Serial.print(msg);
-	//Serial.print(" Lenght: ");
-	//Serial.println(strlen(msg));
+  //Update all receivers
+  for(unsigned int index = 0; index < RECVEIVERS_LENGHT; index++){
+    receiver rec = receivers[index];
+    rec.notifyUpdate();
   }
-  else
-    Serial.println("Failed to Send");
-  driver.waitPacketSent();
-
+  delay(100);
 }
