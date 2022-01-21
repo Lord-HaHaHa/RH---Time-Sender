@@ -12,7 +12,6 @@
 #define WLAN_SURFACE_HOTSPOT
 #include <settings.h>
 
-
 //Webserver-settings
 #include <vars.h>
 

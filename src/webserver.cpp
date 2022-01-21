@@ -78,14 +78,14 @@ void HandleClient() {
         Serial.println(server.arg(i));
         Clients_Response = server.arg(i);
         int timeshift = Clients_Response.toInt();
-        receivers[2].timeshift = timeshift;
+        receivers[1].timeshift = timeshift;
       }
       if (Argument_Name == "clock3") {
         Serial.print(" Input received was: ");
         Serial.println(server.arg(i));
         Clients_Response = server.arg(i);
         int timeshift = Clients_Response.toInt();
-        receivers[3].timeshift = timeshift;
+        receivers[2].timeshift = timeshift;
       }
     }
   }
