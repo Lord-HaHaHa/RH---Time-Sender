@@ -9,22 +9,21 @@ ESP8266WebServer server(80);
 void HandleClient();
 
 void setupWebserver(){
-  server.begin(); Serial.println("Webserver started..."); // Start the webserver
+  server.begin(); // Start the webserver
+  Serial.println("Webserver started..."); 
   Serial.println("\nConnected to the WiFi network");
   Serial.print("Use this URL to connect: http://");// Print the IP address
   Serial.print(WiFi.localIP());Serial.println("/");
 
   //Setup Webserver
-  // Next define what the server should do when a client connects
-  server.on("/", HandleClient); // The client connected with no arguments e.g. http:192.160.0.40/
-  //server.on("/result", ShowClientResponse);
-  Serial.println("Server listening");
+  server.on("/", HandleClient);
+  Serial.println("Webserver setup complete");
 }
 
 void HandleClient() {
   String webpage;
   webpage =  "<html>";
-   webpage += "<head><title>ESP8266 Input Example</title>";
+   webpage += "<head><title>Config Timezones</title>";
     webpage += "<style>";
      webpage += "body { background-color: #E6E6FA; font-family: Arial, Helvetica, Sans-Serif; Color: blue;}";
     webpage += "</style>";

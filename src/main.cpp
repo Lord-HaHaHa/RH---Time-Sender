@@ -4,8 +4,6 @@
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 #include <ESP8266WiFi.h>
-#include <MD_Parola.h>
-#include <MD_MAX72xx.h>
 #include <receiver.h>
 
 //WiFi-Settings
@@ -27,8 +25,10 @@ void setupWebserver();
 void setDisplay(String& time);
 
 RH_ASK driver(2000, D1, D3);
+
 const unsigned int RECVEIVERS_LENGHT = 3;
 receiver receivers[RECVEIVERS_LENGHT]={};
+
 void setup()
 {
   pinMode(D3, OUTPUT);
